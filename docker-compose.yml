@@ -1,0 +1,73 @@
+version: '3.2'
+
+services:
+
+  eureka:
+    container_name: eureka
+    build: 
+      context: ./eureka
+    image: eureka:latest
+    ports: 
+      - "8761:8761"
+    networks:
+      - notty-network
+
+  gateway:
+    container_name: gateway
+    build: 
+      context: ./gateway
+    image: gateway:latest
+    command: sh -c './wait-for.sh eureka:8761 -t 0 -- java -jar gateway.jar'
+    ports: 
+      - "80:8080"
+    depends_on:
+      - eureka
+    networks:
+      - notty-network
+
+  email:
+    container_name: email
+    build: 
+      context: ./email
+      dockerfile: Dockerfile
+    image: email:latest
+    command: sh -c './wait-for.sh eureka:8761 -t 0 -- java -jar email.jar'
+    ports: 
+      - "8081:8080"
+    depends_on:
+      - eureka
+    networks:
+      - notty-network
+  
+  push:
+    container_name: push
+    build: 
+      context: ./push
+      dockerfile: Dockerfile
+    image: push:latest
+    command: sh -c './wait-for.sh eureka:8761 -t 0 -- java -jar push.jar'
+    ports: 
+      - "8082:8080"
+    depends_on:
+      - eureka
+    networks:
+      - notty-network
+
+  sms:
+    container_name: sms
+    build: 
+      context: ./sms
+      dockerfile: Dockerfile
+    image: sms:latest
+    command: sh -c './wait-for.sh eureka:8761 -t 0 -- java -jar sms.jar'
+    ports: 
+      - "8083:8080"
+    depends_on:
+      - eureka
+    networks:
+      - notty-network
+
+networks:
+  notty-network:
+      driver: bridge
+

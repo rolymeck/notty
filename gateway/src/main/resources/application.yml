@@ -1,0 +1,44 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://eureka:8761/eureka/
+      
+spring:
+  application:
+    name: gateway
+
+  cloud:
+    gateway:
+
+      discovery:
+        locator:
+          enabled: true
+
+      loadbalancer:
+        use404: true
+
+      routes:
+        - id: email
+          uri: lb://email/
+          predicates:
+            - Path=/notification/email
+            - Method=POST
+          filters:
+            - RewritePath=/notification/email, /
+        - id: push
+          uri: lb://push/
+          predicates:
+            - Path=/notification/push
+            - Method=POST
+          filters:
+            - RewritePath=/notification/push, /
+        - id: sms
+          uri: lb://sms/
+          predicates:
+            - Path=/notification/sms
+            - Method=POST
+          filters:
+            - RewritePath=/notification/sms, /
+
+server:
+  port: 8080
